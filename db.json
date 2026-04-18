@@ -1,0 +1,148 @@
+{
+  "products": [
+    {
+      "id": "pure-water-1776500665210",
+      "name": "Pure Water",
+      "category": "Drinks",
+      "price": 50,
+      "description": "Sachet Water",
+      "image": "/uploads/image-1776500665195-571388603.jpg",
+      "available": true
+    },
+    {
+      "id": "malta-guinness-1776500606416",
+      "name": "Malta Guinness",
+      "category": "Drinks",
+      "price": 1000,
+      "description": "35CL, Can ",
+      "image": "/uploads/image-1776500606401-565490376.jpg",
+      "available": true
+    },
+    {
+      "id": "coco-cola-1776500576113",
+      "name": "Coco Cola",
+      "category": "Drinks",
+      "price": 500,
+      "description": "50CL",
+      "image": "/uploads/image-1776500576098-2364269.jpg",
+      "available": true
+    },
+    {
+      "id": "sprite-1776500552071",
+      "name": "Sprite",
+      "category": "Drinks",
+      "price": 500,
+      "description": "50CL",
+      "image": "/uploads/image-1776500552057-531726548.jpg",
+      "available": true
+    },
+    {
+      "id": "fanta-1776500523031",
+      "name": "Fanta",
+      "category": "Drinks",
+      "price": 500,
+      "description": "50CL",
+      "image": "/uploads/image-1776500523018-396332427.jpg",
+      "available": true
+    },
+    {
+      "id": "chicken-pie-1776500487580",
+      "name": "Chicken Pie",
+      "category": "Pastries",
+      "price": 1500,
+      "description": "Signature Chruncy Chicken Pie ",
+      "image": "/uploads/image-1776500487567-493947010.jpg",
+      "available": true
+    },
+    {
+      "id": "weddee-s-regular-shawarma-1776500454220",
+      "name": "WedDee's Regular Shawarma",
+      "category": "Specials",
+      "price": 3500,
+      "description": "Beef and Chicken",
+      "image": "/uploads/image-1776500454203-276778790.jpg",
+      "available": true
+    },
+    {
+      "id": "the-kings-bite-1776500414680",
+      "name": "The Kings Bite",
+      "category": "Pastries",
+      "price": 1500,
+      "description": "Signature Chruncy Meat Pie ",
+      "image": "/uploads/image-1776500414635-936898423.jpg",
+      "available": true
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-MO43D6J9",
+      "receiptNumber": "WSB-2026-002",
+      "createdAt": 1776501904725,
+      "checkoutMode": "pickup",
+      "pickupTime": "10:00 AM",
+      "deliveryAddress": null,
+      "deliveryNotes": null,
+      "customer": {
+        "name": "Richmond Henshaw",
+        "email": "richmondhenshaw35@gmail.com",
+        "contact": "02348169573"
+      },
+      "items": [
+        {
+          "id": "pure-water-1776500665210",
+          "name": "Pure Water",
+          "category": "Drinks",
+          "price": 50,
+          "description": "Sachet Water",
+          "image": "/uploads/image-1776500665195-571388603.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 50,
+      "taxes": 4,
+      "deliveryFee": 0,
+      "total": 54,
+      "paymentMethod": "card (verve ending in 5918)",
+      "paymentConfirmed": true,
+      "paymentReference": "WD-MO43D6J7-Z128",
+      "status": "completed",
+      "paidAt": "2026-04-18T08:46:49.000Z"
+    },
+    {
+      "id": "ORD-MO42N1O5",
+      "receiptNumber": "WSB-2026-001",
+      "createdAt": 1776500685365,
+      "checkoutMode": "pickup",
+      "pickupTime": "10:00 AM",
+      "deliveryAddress": null,
+      "deliveryNotes": null,
+      "customer": {
+        "name": "Guest",
+        "email": "guest@weddee.com",
+        "contact": "Not provided"
+      },
+      "items": [
+        {
+          "id": "pure-water-1776500665210",
+          "name": "Pure Water",
+          "category": "Drinks",
+          "price": 50,
+          "description": "Sachet Water",
+          "image": "/uploads/image-1776500665195-571388603.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 50,
+      "taxes": 4,
+      "deliveryFee": 0,
+      "total": 54,
+      "paymentMethod": "card (verve ending in 5918)",
+      "paymentConfirmed": true,
+      "paymentReference": "WD-MO42N1O5-67UW",
+      "status": "completed",
+      "paidAt": "2026-04-18T08:26:17.000Z"
+    }
+  ]
+}
