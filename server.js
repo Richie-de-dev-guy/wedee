@@ -440,6 +440,9 @@ app.post('/api/orders', async (req, res) => {
     return res.json({ order })
   }
 
+  
+  
+  
   if (!PAYSTACK_SECRET_KEY) {
     order.paymentConfirmed = true
     order.status = 'payment_received'
@@ -541,7 +544,6 @@ app.post('/api/orders/:id/status', requireAdmin, async (req, res) => {
   if (!order) {
     return res.status(404).json({ error: 'Order not found' })
   }
-  const previousStatus = order.status
   order.status = status
   const shouldSendEmail =
     order.paymentConfirmed &&

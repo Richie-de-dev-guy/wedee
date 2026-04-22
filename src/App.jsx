@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import jsQR from 'jsqr'
 import { jsPDF } from 'jspdf'
 import logo from './Socialicons.png'
 import './App.css'
 
-const brand = {
+const _brand = {
   name: 'WedDee’s Signature Bistro',
   location: 'Calabar, Cross River State, Nigeria',
   highlight: 'Warm pours. Sweet moments.',
@@ -114,7 +114,7 @@ function formatNaira(value) {
   return `₦${value.toLocaleString('en-NG')}`
 }
 
-function generateOrderId() {
+function _generateOrderId() {
   return `WD-${Date.now().toString(36).toUpperCase()}-${Math.random()
     .toString(36)
     .slice(2, 6)
@@ -262,7 +262,7 @@ function App() {
   })
   const [view, setView] = useState('menu')
   const [showCart, setShowCart] = useState(false)
-  const [guestMode, setGuestMode] = useState(true)
+  const [_guestMode, _setGuestMode] = useState(true)
   const [user, setUser] = useState({ name: '', email: '', phone: '' })
   const [checkoutMode, setCheckoutMode] = useState('delivery')
   const [pickupTime, setPickupTime] = useState('10:00 AM')
@@ -282,8 +282,8 @@ function App() {
   const [adminLoginError, setAdminLoginError] = useState('')
   const [adminLoading, setAdminLoading] = useState(false)
   const [adminNotifications, setAdminNotifications] = useState(() => Number(localStorage.getItem('weddee-admin-notifications') || 0))
-  const [notificationPermission, setNotificationPermission] = useState(() => (typeof Notification !== 'undefined' ? Notification.permission : 'default'))
-  const [paymentReference, setPaymentReference] = useState(null)
+  const [_notificationPermission, _setNotificationPermission] = useState(() => (typeof Notification !== 'undefined' ? Notification.permission : 'default'))
+  const [_paymentReference, _setPaymentReference] = useState(null)
   const [showSuccessBanner, setShowSuccessBanner] = useState(false)
   const [customerOrders, setCustomerOrders] = useState([])
   const [showQrScanner, setShowQrScanner] = useState(false)
@@ -372,7 +372,7 @@ function App() {
     }
   }
 
-  const startQrScanner = async () => {
+  const startQrScanner = useEffectEvent(async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
       setScannerError('Camera access is not supported in this browser.')
       setScannerMessage('')
@@ -429,7 +429,7 @@ function App() {
       setScannerMessage('')
       stopQrScanner()
     }
-  }
+  })
 
   useEffect(() => {
     if (!showQrScanner) {
@@ -483,9 +483,7 @@ function App() {
     if (typeof Notification === 'undefined') return 'denied'
     if (Notification.permission === 'granted') return 'granted'
     if (Notification.permission === 'denied') return 'denied'
-    const permission = await Notification.requestPermission()
-    setNotificationPermission(permission)
-    return permission
+    return Notification.requestPermission()
   }
 
   const showAdminOrderNotification = async (order) => {
@@ -557,6 +555,9 @@ function App() {
     if (view === 'admin' && adminToken) {
       fetchAdminOrders()
     }
+    // fetchAdminOrders is also used from event handlers, so this effect intentionally
+    // keys off the admin view/auth state instead of the function identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, adminToken])
 
   const filteredItems = useMemo(() => {
@@ -609,7 +610,7 @@ function App() {
     setCart((current) => current.filter((entry) => entry.id !== id))
   }
 
-  const verifyPayment = async (reference) => {
+  const verifyPayment = useEffectEvent(async (reference) => {
     setPaymentStatus('processing')
     try {
       const response = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`)
@@ -638,7 +639,7 @@ function App() {
     } finally {
       setPaymentStatus('idle')
     }
-  }
+  })
 
   const handleOrderSubmit = async () => {
     if (!cart.length) return
@@ -736,7 +737,7 @@ function App() {
     }
   }
 
-  const toggleAuthMode = () => setGuestMode((value) => !value)
+  const _toggleAuthMode = () => _setGuestMode((value) => !value)
 
   const checkoutButtonLabel = paymentStatus === 'processing' ? 'Processing…' : paymentMethod === 'cod' ? 'Place Order' : 'Pay securely'
 
