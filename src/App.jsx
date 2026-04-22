@@ -715,10 +715,6 @@ function App() {
 
   const checkoutButtonLabel = paymentStatus === 'processing' ? 'Processing…' : paymentMethod === 'cod' ? 'Place Order' : 'Pay securely'
 
-  const receiptEmailMessage = receiptEmailStatus?.status === 'sent'
-    ? `Your receipt has been sent to ${orderResult?.customer?.email}.`
-    : `Receipt email is not active yet. Add real SMTP details in .env to send receipts to ${orderResult?.customer?.email || 'the customer'}.`
-
   const orderVerificationUrl = orderResult
     ? `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(orderResult.id)}`
     : ''
@@ -1274,9 +1270,11 @@ function App() {
                   ? `Your order is ready for pickup at Marian, Calabar. ${orderResult.paymentMethod === 'cod' ? 'Please pay cash when you collect your order.' : ''}`
                   : `Your dispatch team will contact you shortly to complete delivery. ${orderResult.paymentMethod === 'cod' ? 'Please have cash ready for payment upon delivery.' : ''}`}
               </p>
-              <p className="help-text" style={{ marginTop: '8px' }}>
-                {receiptEmailMessage}
-              </p>
+              {receiptEmailStatus?.status === 'sent' && (
+                <p className="help-text" style={{ marginTop: '8px' }}>
+                  Your receipt has been sent to <strong>{orderResult.customer?.email}</strong>.
+                </p>
+              )}
               <div className="receipt-grid">
                 <div>
                   <p className="receipt-label">Receipt No.</p>

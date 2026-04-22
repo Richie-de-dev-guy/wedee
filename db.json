@@ -106,7 +106,7 @@
       "paymentMethod": "cod",
       "paymentConfirmed": true,
       "paymentReference": "WD-MOABKP1U-PFVF",
-      "status": "confirmed",
+      "status": "completed",
       "lastStatusEmailSent": "confirmed"
     },
     {
