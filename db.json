@@ -75,6 +75,41 @@
   ],
   "orders": [
     {
+      "id": "ORD-MOA7NAIW",
+      "receiptNumber": "WSB-2026-003",
+      "createdAt": 1776871891976,
+      "checkoutMode": "pickup",
+      "pickupTime": "10:00 AM",
+      "deliveryAddress": null,
+      "deliveryNotes": null,
+      "customer": {
+        "name": "Richmond Effiom Henshaw",
+        "email": "richmondhenshaw35@gmail.com",
+        "contact": "07079332442"
+      },
+      "items": [
+        {
+          "id": "pure-water-1776500665210",
+          "name": "Pure Water",
+          "category": "Drinks",
+          "price": 50,
+          "description": "Sachet Water",
+          "image": "/uploads/image-1776500665195-571388603.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 50,
+      "taxes": 4,
+      "deliveryFee": 0,
+      "total": 54,
+      "paymentMethod": "cod",
+      "paymentConfirmed": true,
+      "paymentReference": "WD-MOA7NAIW-IC3W",
+      "status": "confirmed",
+      "lastStatusEmailSent": "confirmed"
+    },
+    {
       "id": "ORD-MO43D6J9",
       "receiptNumber": "WSB-2026-002",
       "createdAt": 1776501904725,

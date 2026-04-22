@@ -48,6 +48,17 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD?.trim() || 'Wed1234@'
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN?.trim() || 'weddee-admin-token'
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY?.trim() || ''
 const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL?.trim() || 'http://localhost:5173/'
+const EMAIL_HOST = process.env.EMAIL_HOST?.trim() || ''
+const EMAIL_PORT = Number(process.env.EMAIL_PORT || 587)
+const EMAIL_SECURE = process.env.EMAIL_SECURE === 'true'
+const EMAIL_USER = process.env.EMAIL_USER?.trim() || ''
+const EMAIL_PASS = process.env.EMAIL_PASS?.trim() || ''
+
+const PLACEHOLDER_EMAIL_VALUES = new Set([
+  'smtp.example.com',
+  'your-smtp-user',
+  'your-smtp-password',
+])
 
 function buildCallbackUrl(baseUrl, reference) {
   const trimmed = baseUrl.replace(/[?&]$/, '')
@@ -55,31 +66,73 @@ function buildCallbackUrl(baseUrl, reference) {
   return `${trimmed}${separator}reference=${encodeURIComponent(reference)}`
 }
 
-const transporterPromise = (async () => {
-  if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT || 587),
-      secure: process.env.EMAIL_SECURE === 'true',
+let transporterPromise = null
+let hasLoggedEmailSkipReason = false
+
+function logEmailSkipReason(message) {
+  if (hasLoggedEmailSkipReason) return
+  hasLoggedEmailSkipReason = true
+  console.warn(message)
+}
+
+function hasConfiguredEmailCredentials() {
+  return Boolean(EMAIL_HOST && EMAIL_USER && EMAIL_PASS)
+}
+
+function hasPlaceholderEmailConfig() {
+  return [EMAIL_HOST, EMAIL_USER, EMAIL_PASS].some((value) => PLACEHOLDER_EMAIL_VALUES.has(value))
+}
+
+async function createEmailTransporter() {
+  if (hasConfiguredEmailCredentials() && !hasPlaceholderEmailConfig()) {
+    const transporter = nodemailer.createTransport({
+      host: EMAIL_HOST,
+      port: EMAIL_PORT,
+      secure: EMAIL_SECURE,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: EMAIL_USER,
+        pass: EMAIL_PASS,
       },
+    })
+
+    await transporter.verify()
+    console.log(`SMTP email transport ready on ${EMAIL_HOST}:${EMAIL_PORT}.`)
+    return transporter
+  }
+
+  if (hasPlaceholderEmailConfig()) {
+    logEmailSkipReason('Email disabled: replace placeholder SMTP values in .env before sending order emails.')
+    return null
+  }
+
+  try {
+    const testAccount = await nodemailer.createTestAccount()
+    console.log('Ethereal test email account created. Preview URL will be printed on send.')
+    return nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    })
+  } catch (error) {
+    logEmailSkipReason(`Email disabled: unable to create a test mailbox (${error.message}).`)
+    return null
+  }
+}
+
+async function getEmailTransporter() {
+  if (!transporterPromise) {
+    transporterPromise = createEmailTransporter().catch((error) => {
+      console.warn(`Email transport setup failed: ${error.message}`)
+      return null
     })
   }
 
-  const testAccount = await nodemailer.createTestAccount()
-  console.log('Ethereal test email account created. Preview URL will be printed on send.')
-  return nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass,
-    },
-  })
-})()
+  return transporterPromise
+}
 
 async function initDb() {
   try {
@@ -236,9 +289,10 @@ function buildOrderItemsHtml(items) {
 }
 
 async function sendOrderConfirmationEmail(order) {
-  const transporter = await transporterPromise
   const to = order.customer?.email
   if (!to) return
+  const transporter = await getEmailTransporter()
+  if (!transporter) return
   const subject = `WedDee’s Bistro Order ${order.receiptNumber || order.id} Receipt`
   const html = `
     <div style="font-family: Arial, sans-serif; color: #343a40;">
@@ -266,15 +320,19 @@ async function sendOrderConfirmationEmail(order) {
     </div>
   `
 
-  const info = await transporter.sendMail({
-    from: 'WedDee’s Signature Bistro <no-reply@weddee.com>',
-    to,
-    subject,
-    html,
-  })
+  try {
+    const info = await transporter.sendMail({
+      from: 'WedDee’s Signature Bistro <no-reply@weddee.com>',
+      to,
+      subject,
+      html,
+    })
 
-  if (nodemailer.getTestMessageUrl(info)) {
-    console.log('Preview email:', nodemailer.getTestMessageUrl(info))
+    if (nodemailer.getTestMessageUrl(info)) {
+      console.log('Preview email:', nodemailer.getTestMessageUrl(info))
+    }
+  } catch (error) {
+    console.warn(`Order email could not be sent for ${order.receiptNumber || order.id}: ${error.message}`)
   }
 }
 

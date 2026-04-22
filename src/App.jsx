@@ -676,6 +676,21 @@ function App() {
       total,
     }
 
+    const finalizeSuccessfulOrder = async (order) => {
+      setOrderResult(order)
+      setOrders((current) => [order, ...current])
+      setCart([])
+      localStorage.setItem('weddee-customer-email', order.customer.email)
+      setView('confirmation')
+      setShowCart(false)
+
+      try {
+        await createReceiptPdf(order)
+      } catch (error) {
+        console.error('Receipt generation failed', error)
+      }
+    }
+
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -702,13 +717,7 @@ function App() {
 
       if (paymentMethod === 'cod') {
         // For pay on delivery, order is confirmed immediately
-        setOrderResult(data.order)
-        setOrders((current) => [data.order, ...current])
-        setCart([])
-        localStorage.setItem('weddee-customer-email', data.order.customer.email)
-        setView('confirmation')
-        setShowCart(false)
-        await createReceiptPdf(data.order)
+        await finalizeSuccessfulOrder(data.order)
         fetchCustomerOrders()
       } else {
         // Online payment - redirect to Paystack
@@ -717,11 +726,7 @@ function App() {
           window.location.href = data.authorization_url
           return
         }
-        setOrders((current) => [data.order, ...current])
-        setOrderResult(data.order)
-        setCart([])
-        setView('confirmation')
-        setShowCart(false)
+        await finalizeSuccessfulOrder(data.order)
       }
     } catch (error) {
       console.error('Order submit error', error)
