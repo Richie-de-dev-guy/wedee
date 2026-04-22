@@ -1,6 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import jsQR from 'jsqr'
-import { jsPDF } from 'jspdf'
 import logo from './Socialicons.png'
 import './App.css'
 
@@ -121,28 +120,7 @@ function _generateOrderId() {
     .toUpperCase()}`
 }
 
-async function loadImageAsDataUrl(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = img.width
-      canvas.height = img.height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        reject(new Error('Unable to create canvas context'))
-        return
-      }
-      ctx.drawImage(img, 0, 0)
-      resolve(canvas.toDataURL('image/png'))
-    }
-    img.onerror = () => reject(new Error('Unable to load image'))
-    img.src = src
-  })
-}
-
-async function createReceiptPdf(order) {
+/* async function createReceiptPdf(order) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   const margin = 40
   let y = 50
@@ -248,7 +226,7 @@ async function createReceiptPdf(order) {
   doc.text('Non-refundable once prepared. Please contact support for questions.', margin, y)
 
   doc.save(`${order.receiptNumber || order.id}-receipt.pdf`)
-}
+} */
 
 function App() {
   const [menuItems, setMenuItems] = useState(() => {
@@ -269,6 +247,7 @@ function App() {
   const [deliveryInfo, setDeliveryInfo] = useState({ area: '', details: '' })
   const [paymentStatus, setPaymentStatus] = useState('idle')
   const [orderResult, setOrderResult] = useState(null)
+  const [receiptEmailStatus, setReceiptEmailStatus] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('online')
   const [orders, setOrders] = useState(() => {
     const stored = localStorage.getItem('weddee-orders')
@@ -623,12 +602,12 @@ function App() {
       // Store customer email for order tracking
       localStorage.setItem('weddee-customer-email', data.order.customer.email)
       setOrderResult(data.order)
+      setReceiptEmailStatus(data.emailDelivery || null)
       setOrders((current) => [data.order, ...current])
       setCart([])
       localStorage.removeItem('weddee-cart')
       setView('orders')
       setShowSuccessBanner(true)
-      await createReceiptPdf(data.order)
       fetchCustomerOrders()
       const url = window.location.origin + window.location.pathname
       window.history.replaceState({}, '', url)
@@ -657,6 +636,7 @@ function App() {
     }
 
     setPaymentStatus('processing')
+    setReceiptEmailStatus(null)
 
     const payload = {
       customer: {
@@ -676,19 +656,14 @@ function App() {
       total,
     }
 
-    const finalizeSuccessfulOrder = async (order) => {
+    const finalizeSuccessfulOrder = async (order, emailDelivery = null) => {
       setOrderResult(order)
+      setReceiptEmailStatus(emailDelivery)
       setOrders((current) => [order, ...current])
       setCart([])
       localStorage.setItem('weddee-customer-email', order.customer.email)
       setView('confirmation')
       setShowCart(false)
-
-      try {
-        await createReceiptPdf(order)
-      } catch (error) {
-        console.error('Receipt generation failed', error)
-      }
     }
 
     try {
@@ -717,7 +692,7 @@ function App() {
 
       if (paymentMethod === 'cod') {
         // For pay on delivery, order is confirmed immediately
-        await finalizeSuccessfulOrder(data.order)
+        await finalizeSuccessfulOrder(data.order, data.emailDelivery || null)
         fetchCustomerOrders()
       } else {
         // Online payment - redirect to Paystack
@@ -726,7 +701,7 @@ function App() {
           window.location.href = data.authorization_url
           return
         }
-        await finalizeSuccessfulOrder(data.order)
+        await finalizeSuccessfulOrder(data.order, data.emailDelivery || null)
       }
     } catch (error) {
       console.error('Order submit error', error)
@@ -736,15 +711,13 @@ function App() {
     }
   }
 
-  const handleReceiptDownload = async () => {
-    if (orderResult) {
-      await createReceiptPdf(orderResult)
-    }
-  }
-
   const _toggleAuthMode = () => _setGuestMode((value) => !value)
 
   const checkoutButtonLabel = paymentStatus === 'processing' ? 'Processing…' : paymentMethod === 'cod' ? 'Place Order' : 'Pay securely'
+
+  const receiptEmailMessage = receiptEmailStatus?.status === 'sent'
+    ? `Your receipt has been sent to ${orderResult?.customer?.email}.`
+    : `Receipt email is not active yet. Add real SMTP details in .env to send receipts to ${orderResult?.customer?.email || 'the customer'}.`
 
   const orderVerificationUrl = orderResult
     ? `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(orderResult.id)}`
@@ -1302,8 +1275,7 @@ function App() {
                   : `Your dispatch team will contact you shortly to complete delivery. ${orderResult.paymentMethod === 'cod' ? 'Please have cash ready for payment upon delivery.' : ''}`}
               </p>
               <p className="help-text" style={{ marginTop: '8px' }}>
-                A receipt has been sent to <strong>{orderResult.customer?.email}</strong>.
-                You can still download a PDF copy if you want one now.
+                {receiptEmailMessage}
               </p>
               <div className="receipt-grid">
                 <div>
@@ -1324,9 +1296,6 @@ function App() {
                 </div>
               </div>
               <div className="receipt-actions">
-                <button className="primary-button" onClick={handleReceiptDownload}>
-                  Download receipt (PDF)
-                </button>
                 <button className="secondary-button" onClick={() => setView('orders')}>
                   View My Orders
                 </button>

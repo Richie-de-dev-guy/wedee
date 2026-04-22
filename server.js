@@ -53,6 +53,8 @@ const EMAIL_PORT = Number(process.env.EMAIL_PORT || 587)
 const EMAIL_SECURE = process.env.EMAIL_SECURE === 'true'
 const EMAIL_USER = process.env.EMAIL_USER?.trim() || ''
 const EMAIL_PASS = process.env.EMAIL_PASS?.trim() || ''
+const EMAIL_FORCE_IPV4 = process.env.EMAIL_FORCE_IPV4 !== 'false'
+const EMAIL_ALLOW_SELF_SIGNED = process.env.EMAIL_ALLOW_SELF_SIGNED === 'true'
 
 const PLACEHOLDER_EMAIL_VALUES = new Set([
   'smtp.example.com',
@@ -93,10 +95,18 @@ async function createEmailTransporter() {
         user: EMAIL_USER,
         pass: EMAIL_PASS,
       },
+      family: EMAIL_FORCE_IPV4 ? 4 : undefined,
+      tls: {
+        servername: EMAIL_HOST,
+        rejectUnauthorized: !EMAIL_ALLOW_SELF_SIGNED,
+      },
     })
 
     await transporter.verify()
     console.log(`SMTP email transport ready on ${EMAIL_HOST}:${EMAIL_PORT}.`)
+    if (EMAIL_ALLOW_SELF_SIGNED) {
+      console.warn('SMTP is accepting a self-signed certificate because EMAIL_ALLOW_SELF_SIGNED=true.')
+    }
     return transporter
   }
 
@@ -105,22 +115,8 @@ async function createEmailTransporter() {
     return null
   }
 
-  try {
-    const testAccount = await nodemailer.createTestAccount()
-    console.log('Ethereal test email account created. Preview URL will be printed on send.')
-    return nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    })
-  } catch (error) {
-    logEmailSkipReason(`Email disabled: unable to create a test mailbox (${error.message}).`)
-    return null
-  }
+  logEmailSkipReason('Email disabled: set real SMTP credentials in .env to send customer receipts.')
+  return null
 }
 
 async function getEmailTransporter() {
@@ -290,9 +286,13 @@ function buildOrderItemsHtml(items) {
 
 async function sendOrderConfirmationEmail(order) {
   const to = order.customer?.email
-  if (!to) return
+  if (!to) {
+    return { status: 'skipped', reason: 'missing-recipient' }
+  }
   const transporter = await getEmailTransporter()
-  if (!transporter) return
+  if (!transporter) {
+    return { status: 'skipped', reason: 'email-not-configured' }
+  }
   const subject = `WedDee’s Bistro Order ${order.receiptNumber || order.id} Receipt`
   const html = `
     <div style="font-family: Arial, sans-serif; color: #343a40;">
@@ -331,8 +331,10 @@ async function sendOrderConfirmationEmail(order) {
     if (nodemailer.getTestMessageUrl(info)) {
       console.log('Preview email:', nodemailer.getTestMessageUrl(info))
     }
+    return { status: 'sent' }
   } catch (error) {
     console.warn(`Order email could not be sent for ${order.receiptNumber || order.id}: ${error.message}`)
+    return { status: 'failed', reason: error.message }
   }
 }
 
@@ -494,8 +496,8 @@ app.post('/api/orders', async (req, res) => {
 
   // Send receipt email for pay on delivery immediately
   if (paymentMethod === 'cod') {
-    await sendOrderConfirmationEmail(order)
-    return res.json({ order })
+    const emailDelivery = await sendOrderConfirmationEmail(order)
+    return res.json({ order, emailDelivery })
   }
 
   
@@ -506,9 +508,10 @@ app.post('/api/orders', async (req, res) => {
     order.status = 'payment_received'
     order.lastStatusEmailSent = order.status
     await db.write()
-    await sendOrderConfirmationEmail(order)
+    const emailDelivery = await sendOrderConfirmationEmail(order)
     return res.json({
       order,
+      emailDelivery,
       authorization_url: null,
       message:
         'Paystack is not configured. Set PAYSTACK_SECRET_KEY in .env to enable live payment integration.',
@@ -587,9 +590,9 @@ app.get('/api/paystack/verify', async (req, res) => {
   order.lastStatusEmailSent = order.status
   await db.write()
 
-  await sendOrderConfirmationEmail(order)
+  const emailDelivery = await sendOrderConfirmationEmail(order)
 
-  res.json({ order })
+  res.json({ order, emailDelivery })
 })
 
 app.post('/api/orders/:id/status', requireAdmin, async (req, res) => {
