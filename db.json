@@ -1,15 +1,6 @@
 {
   "products": [
     {
-      "id": "pure-water-1776500665210",
-      "name": "Pure Water",
-      "category": "Drinks",
-      "price": 50,
-      "description": "Sachet Water",
-      "image": "/uploads/image-1776500665195-571388603.jpg",
-      "available": true
-    },
-    {
       "id": "malta-guinness-1776500606416",
       "name": "Malta Guinness",
       "category": "Drinks",
@@ -75,6 +66,51 @@
   ],
   "orders": [
     {
+      "id": "ORD-MOCXPRKU",
+      "receiptNumber": "WSB-2026-013",
+      "createdAt": 1777036609758,
+      "checkoutMode": "delivery",
+      "pickupTime": null,
+      "deliveryAddress": "Extension",
+      "deliveryNotes": "12",
+      "customer": {
+        "name": "Eddy",
+        "email": "edidionginokon01@gmail.com",
+        "contact": "08106936724"
+      },
+      "items": [
+        {
+          "id": "weddee-s-regular-shawarma-1776500454220",
+          "name": "WedDee's Regular Shawarma",
+          "category": "Specials",
+          "price": 3500,
+          "description": "Beef and Chicken",
+          "image": "/uploads/image-1776500454203-276778790.jpg",
+          "available": true,
+          "quantity": 1
+        },
+        {
+          "id": "malta-guinness-1776500606416",
+          "name": "Malta Guinness",
+          "category": "Drinks",
+          "price": 1000,
+          "description": "35CL, Can ",
+          "image": "/uploads/image-1776500606401-565490376.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 4500,
+      "taxes": 338,
+      "deliveryFee": 2000,
+      "total": 6838,
+      "paymentMethod": "cod",
+      "paymentConfirmed": true,
+      "paymentReference": "WD-MOCXPRKU-I4XY",
+      "status": "completed",
+      "lastStatusEmailSent": "confirmed"
+    },
+    {
       "id": "ORD-MOBFIMNV",
       "receiptNumber": "WSB-2026-012",
       "createdAt": 1776945577531,
@@ -116,7 +152,7 @@
       "paymentMethod": "cod",
       "paymentConfirmed": true,
       "paymentReference": "WD-MOBFIMNU-GL39",
-      "status": "confirmed",
+      "status": "completed",
       "lastStatusEmailSent": "confirmed"
     },
     {
@@ -161,7 +197,7 @@
       "paymentMethod": "cod",
       "paymentConfirmed": true,
       "paymentReference": "WD-MOBFHWYJ-JQIX",
-      "status": "confirmed",
+      "status": "completed",
       "lastStatusEmailSent": "confirmed"
     },
     {
@@ -196,7 +232,7 @@
       "paymentMethod": "cod",
       "paymentConfirmed": true,
       "paymentReference": "WD-MOBFF6HB-MS19",
-      "status": "ready",
+      "status": "pending",
       "lastStatusEmailSent": "ready"
     },
     {

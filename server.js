@@ -53,6 +53,8 @@ const EMAIL_PORT = Number(process.env.EMAIL_PORT || 587)
 const EMAIL_SECURE = process.env.EMAIL_SECURE === 'true'
 const EMAIL_USER = process.env.EMAIL_USER?.trim() || ''
 const EMAIL_PASS = process.env.EMAIL_PASS?.trim() || ''
+const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME?.trim() || 'WedDee Signature Bistro'
+const EMAIL_FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS?.trim() || EMAIL_USER
 const EMAIL_FORCE_IPV4 = process.env.EMAIL_FORCE_IPV4 !== 'false'
 const EMAIL_ALLOW_SELF_SIGNED = process.env.EMAIL_ALLOW_SELF_SIGNED === 'true'
 
@@ -284,8 +286,13 @@ function buildOrderItemsHtml(items) {
   `
 }
 
+function formatEmailFrom(name, address) {
+  if (!address) return ''
+  return name ? `${name} <${address}>` : address
+}
+
 async function sendOrderConfirmationEmail(order) {
-  const to = order.customer?.email
+  const to = order.customer?.email?.trim()
   if (!to) {
     return { status: 'skipped', reason: 'missing-recipient' }
   }
@@ -293,7 +300,32 @@ async function sendOrderConfirmationEmail(order) {
   if (!transporter) {
     return { status: 'skipped', reason: 'email-not-configured' }
   }
-  const subject = `WedDee’s Bistro Order ${order.receiptNumber || order.id} Receipt`
+  const from = formatEmailFrom(EMAIL_FROM_NAME, EMAIL_FROM_ADDRESS)
+  if (!from) {
+    return { status: 'skipped', reason: 'missing-sender-address' }
+  }
+  const receiptId = order.receiptNumber || order.id
+  const subject = `WedDee Receipt ${receiptId}`
+  const text = [
+    'WedDee Signature Bistro',
+    '',
+    `Your order ${receiptId} has been received.`,
+    `Status: ${getOrderStatusLabel(order.status)}`,
+    `Payment method: ${order.paymentMethod === 'cod' ? 'Pay on Delivery' : order.paymentMethod || 'Online payment'}`,
+    `Delivery method: ${order.checkoutMode === 'pickup' ? 'Pickup' : 'Delivery'}`,
+    `Customer email: ${order.customer.email}`,
+    `Customer phone: ${order.customer.contact}`,
+    `Receipt number: ${receiptId}`,
+    `Order total: ${formatCurrency(order.total)}`,
+    `Taxes: ${formatCurrency(order.taxes)}`,
+    `Delivery fee: ${formatCurrency(order.deliveryFee || 0)}`,
+    order.checkoutMode === 'delivery' ? `Delivery address: ${order.deliveryAddress || 'Not provided'}` : null,
+    order.deliveryNotes ? `Delivery notes: ${order.deliveryNotes}` : null,
+    '',
+    'Thank you for ordering from WedDee Signature Bistro.',
+  ]
+    .filter(Boolean)
+    .join('\n')
   const html = `
     <div style="font-family: Arial, sans-serif; color: #343a40;">
       <h2>WedDee’s Signature Bistro</h2>
@@ -322,9 +354,10 @@ async function sendOrderConfirmationEmail(order) {
 
   try {
     const info = await transporter.sendMail({
-      from: 'WedDee’s Signature Bistro <no-reply@weddee.com>',
+      from,
       to,
       subject,
+      text,
       html,
     })
 
@@ -489,7 +522,7 @@ app.post('/api/orders', async (req, res) => {
     paymentConfirmed: paymentMethod === 'cod', // Pay on delivery is confirmed immediately
     paymentReference: reference,
     status: paymentMethod === 'cod' ? 'confirmed' : 'pending', // Pay on delivery starts as confirmed
-    lastStatusEmailSent: paymentMethod === 'cod' ? 'confirmed' : null,
+    lastStatusEmailSent: null,
   }
   db.data.orders.unshift(order)
   await db.write()
@@ -497,6 +530,10 @@ app.post('/api/orders', async (req, res) => {
   // Send receipt email for pay on delivery immediately
   if (paymentMethod === 'cod') {
     const emailDelivery = await sendOrderConfirmationEmail(order)
+    if (emailDelivery?.status === 'sent') {
+      order.lastStatusEmailSent = order.status
+      await db.write()
+    }
     return res.json({ order, emailDelivery })
   }
 
@@ -506,9 +543,12 @@ app.post('/api/orders', async (req, res) => {
   if (!PAYSTACK_SECRET_KEY) {
     order.paymentConfirmed = true
     order.status = 'payment_received'
-    order.lastStatusEmailSent = order.status
     await db.write()
     const emailDelivery = await sendOrderConfirmationEmail(order)
+    if (emailDelivery?.status === 'sent') {
+      order.lastStatusEmailSent = order.status
+      await db.write()
+    }
     return res.json({
       order,
       emailDelivery,
@@ -587,10 +627,13 @@ app.get('/api/paystack/verify', async (req, res) => {
     ? `${paymentInfo.authorization.channel} (${paymentInfo.authorization.brand || 'Card'} ending in ${paymentInfo.authorization.last4})`
     : `Paid via ${paymentInfo.gateway || 'Paystack'}`
   order.paidAt = paymentInfo.paid_at || Date.now()
-  order.lastStatusEmailSent = order.status
   await db.write()
 
   const emailDelivery = await sendOrderConfirmationEmail(order)
+  if (emailDelivery?.status === 'sent') {
+    order.lastStatusEmailSent = order.status
+    await db.write()
+  }
 
   res.json({ order, emailDelivery })
 })
@@ -612,8 +655,10 @@ app.post('/api/orders/:id/status', requireAdmin, async (req, res) => {
     order.lastStatusEmailSent !== status
 
   if (shouldSendEmail) {
-    await sendOrderConfirmationEmail(order)
-    order.lastStatusEmailSent = status
+    const emailDelivery = await sendOrderConfirmationEmail(order)
+    if (emailDelivery?.status === 'sent') {
+      order.lastStatusEmailSent = status
+    }
   }
 
   await db.write()

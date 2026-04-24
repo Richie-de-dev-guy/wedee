@@ -1275,6 +1275,16 @@ function App() {
                   Your receipt has been sent to <strong>{orderResult.customer?.email}</strong>.
                 </p>
               )}
+              {receiptEmailStatus?.status === 'failed' && (
+                <p className="help-text" style={{ marginTop: '8px' }}>
+                  We confirmed your order, but the receipt email could not be delivered right now.
+                </p>
+              )}
+              {receiptEmailStatus?.status === 'skipped' && (
+                <p className="help-text" style={{ marginTop: '8px' }}>
+                  Your order is confirmed, but email receipts are not configured on the server yet.
+                </p>
+              )}
               <div className="receipt-grid">
                 <div>
                   <p className="receipt-label">Receipt No.</p>
