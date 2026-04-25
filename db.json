@@ -66,6 +66,226 @@
   ],
   "orders": [
     {
+      "id": "ORD-MOEBFF0O",
+      "receiptNumber": "WSB-2026-019",
+      "createdAt": 1777120107720,
+      "checkoutMode": "pickup",
+      "pickupTime": "10:00 AM",
+      "deliveryAddress": null,
+      "deliveryNotes": null,
+      "customer": {
+        "name": "Richmond Effiom Henshaw",
+        "email": "richie-the-dev-guy@outlook.com",
+        "contact": "07079332442"
+      },
+      "items": [
+        {
+          "id": "malta-guinness-1776500606416",
+          "name": "Malta Guinness",
+          "category": "Drinks",
+          "price": 1000,
+          "description": "35CL, Can ",
+          "image": "/uploads/image-1776500606401-565490376.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 1000,
+      "taxes": 75,
+      "deliveryFee": 0,
+      "total": 1075,
+      "paymentMethod": "online",
+      "paymentConfirmed": false,
+      "paymentReference": "WD-MOEBFF0O-PB1J",
+      "status": "pending",
+      "lastStatusEmailSent": null
+    },
+    {
+      "id": "ORD-MOEBE266",
+      "receiptNumber": "WSB-2026-018",
+      "createdAt": 1777120044414,
+      "checkoutMode": "pickup",
+      "pickupTime": "10:00 AM",
+      "deliveryAddress": null,
+      "deliveryNotes": null,
+      "customer": {
+        "name": "Richmond Effiom Henshaw",
+        "email": "richie-the-dev-guy@outlook.com",
+        "contact": "07079332442"
+      },
+      "items": [
+        {
+          "id": "malta-guinness-1776500606416",
+          "name": "Malta Guinness",
+          "category": "Drinks",
+          "price": 1000,
+          "description": "35CL, Can ",
+          "image": "/uploads/image-1776500606401-565490376.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 1000,
+      "taxes": 75,
+      "deliveryFee": 0,
+      "total": 1075,
+      "paymentMethod": "online",
+      "paymentConfirmed": false,
+      "paymentReference": "WD-MOEBE265-WSZV",
+      "status": "pending",
+      "lastStatusEmailSent": null
+    },
+    {
+      "id": "ORD-MOEB1ILI",
+      "receiptNumber": "WSB-2026-017",
+      "createdAt": 1777119459174,
+      "checkoutMode": "delivery",
+      "pickupTime": null,
+      "deliveryAddress": "Parliamentary Junction",
+      "deliveryNotes": "Etim Ekpo Crescent",
+      "customer": {
+        "name": "Richmond Henshaw",
+        "email": "richmondhenshaw35@gmail.com",
+        "contact": "02348169573"
+      },
+      "items": [
+        {
+          "id": "coco-cola-1776500576113",
+          "name": "Coco Cola",
+          "category": "Drinks",
+          "price": 500,
+          "description": "50CL",
+          "image": "/uploads/image-1776500576098-2364269.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 500,
+      "taxes": 38,
+      "deliveryFee": 2000,
+      "total": 2538,
+      "paymentMethod": "online",
+      "paymentConfirmed": false,
+      "paymentReference": "WD-MOEB1ILI-IY7W",
+      "status": "pending",
+      "lastStatusEmailSent": null
+    },
+    {
+      "id": "ORD-MOEB18ZM",
+      "receiptNumber": "WSB-2026-016",
+      "createdAt": 1777119446722,
+      "checkoutMode": "pickup",
+      "pickupTime": "10:00 AM",
+      "deliveryAddress": null,
+      "deliveryNotes": null,
+      "customer": {
+        "name": "Richmond Henshaw",
+        "email": "richmondhenshaw35@gmail.com",
+        "contact": "02348169573"
+      },
+      "items": [
+        {
+          "id": "coco-cola-1776500576113",
+          "name": "Coco Cola",
+          "category": "Drinks",
+          "price": 500,
+          "description": "50CL",
+          "image": "/uploads/image-1776500576098-2364269.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 500,
+      "taxes": 38,
+      "deliveryFee": 0,
+      "total": 538,
+      "paymentMethod": "online",
+      "paymentConfirmed": false,
+      "paymentReference": "WD-MOEB18ZM-HIAU",
+      "status": "pending",
+      "lastStatusEmailSent": null
+    },
+    {
+      "id": "ORD-MOEB15I6",
+      "receiptNumber": "WSB-2026-015",
+      "createdAt": 1777119442206,
+      "checkoutMode": "pickup",
+      "pickupTime": "10:00 AM",
+      "deliveryAddress": null,
+      "deliveryNotes": null,
+      "customer": {
+        "name": "Richmond Henshaw",
+        "email": "richmondhenshaw35@gmail.com",
+        "contact": "02348169573"
+      },
+      "items": [
+        {
+          "id": "coco-cola-1776500576113",
+          "name": "Coco Cola",
+          "category": "Drinks",
+          "price": 500,
+          "description": "50CL",
+          "image": "/uploads/image-1776500576098-2364269.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 500,
+      "taxes": 38,
+      "deliveryFee": 0,
+      "total": 538,
+      "paymentMethod": "online",
+      "paymentConfirmed": false,
+      "paymentReference": "WD-MOEB15I5-9ZCA",
+      "status": "pending",
+      "lastStatusEmailSent": null
+    },
+    {
+      "id": "ORD-MOE9W0V6",
+      "receiptNumber": "WSB-2026-014",
+      "createdAt": 1777117523298,
+      "checkoutMode": "delivery",
+      "pickupTime": null,
+      "deliveryAddress": "Parliamentary Junction",
+      "deliveryNotes": "Etim Ekpo Crescent",
+      "customer": {
+        "name": "Richmond Henshaw",
+        "email": "richmondhenshaw35@gmail.com",
+        "contact": "02348169573"
+      },
+      "items": [
+        {
+          "id": "weddee-s-regular-shawarma-1776500454220",
+          "name": "WedDee's Regular Shawarma",
+          "category": "Specials",
+          "price": 3500,
+          "description": "Beef and Chicken",
+          "image": "/uploads/image-1776500454203-276778790.jpg",
+          "available": true,
+          "quantity": 1
+        },
+        {
+          "id": "malta-guinness-1776500606416",
+          "name": "Malta Guinness",
+          "category": "Drinks",
+          "price": 1000,
+          "description": "35CL, Can ",
+          "image": "/uploads/image-1776500606401-565490376.jpg",
+          "available": true,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 4500,
+      "taxes": 338,
+      "deliveryFee": 2000,
+      "total": 6838,
+      "paymentMethod": "cod",
+      "paymentConfirmed": true,
+      "paymentReference": "WD-MOE9W0V6-RBJW",
+      "status": "confirmed",
+      "lastStatusEmailSent": "confirmed"
+    },
+    {
       "id": "ORD-MOCXPRKU",
       "receiptNumber": "WSB-2026-013",
       "createdAt": 1777036609758,
@@ -232,7 +452,7 @@
       "paymentMethod": "cod",
       "paymentConfirmed": true,
       "paymentReference": "WD-MOBFF6HB-MS19",
-      "status": "pending",
+      "status": "completed",
       "lastStatusEmailSent": "ready"
     },
     {

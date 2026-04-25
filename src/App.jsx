@@ -596,6 +596,8 @@ function App() {
       const data = await response.json().catch(() => null)
       if (!response.ok || !data?.order) {
         console.error('Verify error', response.status, data)
+        const message = data?.error || data?.detail?.message || 'Payment verification failed. Please try again.'
+        alert(message)
         setPaymentStatus('idle')
         return
       }
@@ -680,7 +682,7 @@ function App() {
       if (!response.ok) {
         const errData = await response.json().catch(() => null)
         console.error('Order submit failed', errData)
-        alert(errData?.error || 'Unable to place order. Please try again.')
+        alert(errData?.error || errData?.detail?.message || 'Unable to place order. Please try again.')
         setPaymentStatus('idle')
         return
       }
@@ -701,7 +703,9 @@ function App() {
           window.location.href = data.authorization_url
           return
         }
-        await finalizeSuccessfulOrder(data.order, data.emailDelivery || null)
+        alert(data?.message || 'Unable to start Paystack payment. Please try again.')
+        setPaymentStatus('idle')
+        return
       }
     } catch (error) {
       console.error('Order submit error', error)

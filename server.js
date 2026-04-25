@@ -63,6 +63,12 @@ const PLACEHOLDER_EMAIL_VALUES = new Set([
   'your-smtp-user',
   'your-smtp-password',
 ])
+const PLACEHOLDER_PAYSTACK_VALUES = new Set([
+  'sk_test_yourkey',
+  'sk_live_yourkey',
+  'pk_test_yourkey',
+  'pk_live_yourkey',
+])
 
 function buildCallbackUrl(baseUrl, reference) {
   const trimmed = baseUrl.replace(/[?&]$/, '')
@@ -85,6 +91,10 @@ function hasConfiguredEmailCredentials() {
 
 function hasPlaceholderEmailConfig() {
   return [EMAIL_HOST, EMAIL_USER, EMAIL_PASS].some((value) => PLACEHOLDER_EMAIL_VALUES.has(value))
+}
+
+function hasPlaceholderPaystackConfig() {
+  return PLACEHOLDER_PAYSTACK_VALUES.has(PAYSTACK_SECRET_KEY)
 }
 
 async function createEmailTransporter() {
@@ -540,21 +550,10 @@ app.post('/api/orders', async (req, res) => {
   
   
   
-  if (!PAYSTACK_SECRET_KEY) {
-    order.paymentConfirmed = true
-    order.status = 'payment_received'
-    await db.write()
-    const emailDelivery = await sendOrderConfirmationEmail(order)
-    if (emailDelivery?.status === 'sent') {
-      order.lastStatusEmailSent = order.status
-      await db.write()
-    }
-    return res.json({
-      order,
-      emailDelivery,
-      authorization_url: null,
-      message:
-        'Paystack is not configured. Set PAYSTACK_SECRET_KEY in .env to enable live payment integration.',
+  if (!PAYSTACK_SECRET_KEY || hasPlaceholderPaystackConfig()) {
+    return res.status(500).json({
+      error:
+        'Paystack is not configured. Replace PAYSTACK_SECRET_KEY in .env with your real Paystack secret key and restart the server.',
     })
   }
 
@@ -580,7 +579,10 @@ app.post('/api/orders', async (req, res) => {
 
   const data = await response.json()
   if (!data.status) {
-    return res.status(502).json({ error: 'Paystack initialization failed', detail: data })
+    return res.status(502).json({
+      error: data?.message || 'Paystack initialization failed',
+      detail: data,
+    })
   }
 
   return res.json({ order, authorization_url: data.data.authorization_url, reference })
@@ -591,8 +593,11 @@ app.get('/api/paystack/verify', async (req, res) => {
   if (!reference) {
     return res.status(400).json({ error: 'Missing reference' })
   }
-  if (!PAYSTACK_SECRET_KEY) {
-    return res.status(500).json({ error: 'Paystack secret not configured' })
+  if (!PAYSTACK_SECRET_KEY || hasPlaceholderPaystackConfig()) {
+    return res.status(500).json({
+      error:
+        'Paystack secret not configured. Replace PAYSTACK_SECRET_KEY in .env with your real Paystack secret key and restart the server.',
+    })
   }
 
   const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
